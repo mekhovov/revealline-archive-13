@@ -1,4 +1,4 @@
-"""Preserve one original GitHub Release ZIP as an immutable canonical archive."""
+"""Preserve selected original GitHub Release ZIPs as one immutable archive."""
 import argparse
 import json
 from pathlib import Path
@@ -8,9 +8,65 @@ import sys
 
 from verify import ROOT, digest, locked_inputs, verify
 
+MIN_FREE_BYTES = 3 * 1024**3
+
 
 def run(args):
     return subprocess.check_output(args, text=True).strip()
+
+
+def verify_source(source, lock):
+    git = ['git', '-C', str(source)]
+    if run([*git, 'rev-parse', 'HEAD']) != lock['toolingCommit'] or run([*git, 'status', '--porcelain', '--untracked-files=no']):
+        raise ValueError('Tooling must equal the clean reviewed source commit')
+    for release in lock['releases']:
+        ref = 'refs/tags/' + release['version']
+        if run([*git, 'rev-parse', ref]) != release['tagObject'] or run([*git, 'rev-parse', ref + '^{commit}']) != release['sourceRevision']:
+            raise ValueError('Original release tag/source identity changed')
+    extractor = source / lock['extractorPath']
+    if digest(extractor) != lock['extractorSha256']:
+        raise ValueError('Reviewed extractor bytes changed')
+    return extractor
+
+
+def prepare(source, output, root=ROOT):
+    source = source.resolve()
+    output = output.absolute()
+    # Fail before creating output or fetching any ZIP. Tiny unit fixtures mock
+    # only this capacity observation; the command line offers no guard bypass.
+    if shutil.disk_usage(output.parent).free < MIN_FREE_BYTES:
+        raise ValueError('Original ZIP preparation requires at least 3 GiB free')
+    lock, inventory = locked_inputs(root)
+    extractor = verify_source(source, lock)
+    # A fresh CI workspace owns every output. Existing artifacts are never replaced.
+    output.mkdir(parents=True, exist_ok=False)
+    artifact = output / 'artifact'
+    extractions = []
+    for cohort in lock['releases']:
+        version = cohort['version']
+        metadata = root / 'metadata' / version
+        release = artifact / 'releases' / version
+        release.mkdir(parents=True)
+        receipt = output / ('zip-receipt-' + version + '.json')
+        # The pinned extractor deletes each temporary ZIP before the next cohort.
+        subprocess.run([sys.executable, str(extractor), '--metadata', str(metadata), '--output', str(release / 'site'), '--receipt', str(receipt)], check=True)
+        extraction = json.loads(receipt.read_bytes())
+        if extraction['version'] != version or extraction['gameSourceRevision'] != cohort['sourceRevision'] or extraction['distributionSha256'] != cohort['distributionSha256'] or extraction['manifestSha256'] != cohort['metadata']['manifest.json'] or extraction['crcAndHashesVerified'] is not True:
+            raise ValueError('Original ZIP extraction receipt identity changed')
+        shutil.copyfile(metadata / 'release.json', release / 'release.json')
+        extractions.append({'version': version, 'sourceRevision': cohort['sourceRevision'], 'tagObject': cohort['tagObject'], 'originalZipExtraction': extraction})
+    shutil.copyfile(root / 'index.html', artifact / 'index.html')
+    (artifact / '.nojekyll').write_bytes(b'')
+    result = verify(artifact, inventory['files'])
+    verify_source(source, lock)
+    if locked_inputs(root) != (lock, inventory):
+        raise ValueError('Archive inputs changed during extraction')
+    result.update({'archiveId': lock['archiveId'], 'releases': extractions, 'toolingCommit': lock['toolingCommit'], 'archiveCommit': run(['git', '-C', str(root), 'rev-parse', 'HEAD']), 'archiveTree': run(['git', '-C', str(root), 'rev-parse', 'HEAD^{tree}']), 'expectedInventorySha256': lock['expectedInventorySha256'], 'noHistoricalBuilds': True})
+    with (output / 'receipt.json').open('x') as target:
+        json.dump(result, target, indent=2)
+        target.write('\n')
+    shutil.copyfile(root / 'expected-inventory.json', output / 'expected-inventory.json')
+    return result
 
 
 def main():
@@ -18,39 +74,7 @@ def main():
     parser.add_argument('--source', required=True, type=Path)
     parser.add_argument('--out', required=True, type=Path)
     args = parser.parse_args()
-    source = args.source.resolve()
-    output = args.out.absolute()
-    lock, inventory = locked_inputs()
-    git = ['git', '-C', str(source)]
-    if run([*git, 'rev-parse', 'HEAD']) != lock['toolingCommit'] or run([*git, 'status', '--porcelain', '--untracked-files=no']):
-        raise ValueError('Tooling must equal the clean reviewed source commit')
-    if run([*git, 'rev-parse', lock['version']]) != lock['tagObject'] or run([*git, 'rev-parse', lock['version'] + '^{commit}']) != lock['sourceRevision']:
-        raise ValueError('Original release tag/source identity changed')
-    extractor = source / lock['extractorPath']
-    if digest(extractor) != lock['extractorSha256']:
-        raise ValueError('Reviewed extractor bytes changed')
-    metadata = ROOT / 'metadata' / lock['version']
-    for name, expected in lock['metadata'].items():
-        if digest(metadata / name) != expected:
-            raise ValueError('Original metadata bytes changed: ' + name)
-    record = json.loads((metadata / 'release.json').read_bytes())
-    if record['version'] != lock['version'] or record['sourceRevision'] != lock['sourceRevision'] or record['distributionSha256'] != lock['distributionSha256']:
-        raise ValueError('Original release identity changed')
-    # A fresh CI workspace owns every output. Existing artifacts are never replaced.
-    output.mkdir(parents=True, exist_ok=False)
-    artifact = output / 'artifact'
-    release = artifact / 'releases' / lock['version']
-    release.mkdir(parents=True)
-    subprocess.run([sys.executable, str(extractor), '--metadata', str(metadata), '--output', str(release / 'site'), '--receipt', str(output / 'zip-receipt.json')], check=True)
-    shutil.copyfile(metadata / 'release.json', release / 'release.json')
-    shutil.copyfile(ROOT / 'index.html', artifact / 'index.html')
-    (artifact / '.nojekyll').write_bytes(b'')
-    result = verify(artifact, inventory['files'])
-    result.update({'archiveId': lock['archiveId'], 'version': lock['version'], 'sourceRevision': lock['sourceRevision'], 'tagObject': lock['tagObject'], 'toolingCommit': lock['toolingCommit'], 'archiveCommit': run(['git', '-C', str(ROOT), 'rev-parse', 'HEAD']), 'archiveTree': run(['git', '-C', str(ROOT), 'rev-parse', 'HEAD^{tree}']), 'expectedInventorySha256': lock['expectedInventorySha256'], 'originalZipExtraction': json.loads((output / 'zip-receipt.json').read_bytes()), 'noHistoricalBuilds': True})
-    with (output / 'receipt.json').open('x') as target:
-        json.dump(result, target, indent=2)
-        target.write('\n')
-    shutil.copyfile(ROOT / 'expected-inventory.json', output / 'expected-inventory.json')
+    result = prepare(args.source, args.out)
     print(json.dumps(result))
 
 

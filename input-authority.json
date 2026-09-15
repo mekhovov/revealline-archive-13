@@ -1,0 +1,85 @@
+{
+  "format": "revealline-archive-append-authority.v1",
+  "archiveBaseCommit": "03986d7f43d7ed6bd8e76dca29b90a003b17d0bd",
+  "metadataRepository": "mekhovov/revealline",
+  "metadataCommit": "da4459b706555007468d053a578caa215d08eca3",
+  "catalogSha256": "8b27f33322a7291f127051a1a53ff3b5fafa60c29f4499a3c5d2c80023eac19d",
+  "catalogRow": {
+    "version": "v0.55.0",
+    "sourceRevision": "acc9f265b651017fd268ffd8bbe6989bec614c41",
+    "tagObject": "253ed21b6897a0784ba3d8d2b871c952fee90451",
+    "recordSha256": "fc79b9ce3974276a6aa3c5e7a81925fe484387b12e0472f54f81ceea01927d17",
+    "manifestSha256": "96085dafb2c7f8083564e9923647b914efe29a5704a35b23d7fe337f4be4ae56",
+    "checksumSha256": "ef5594fdec1f6d6e3aa638c442ebdc53ae0a0c4fc0870d68c7aa18910300f482"
+  },
+  "metadata": [
+    {
+      "path": "publishing/pages-controller/metadata/v0.55.0/release.json",
+      "bytes": 465,
+      "sha256": "fc79b9ce3974276a6aa3c5e7a81925fe484387b12e0472f54f81ceea01927d17",
+      "gitBlob": "4ad23dc453822ce72bb91ae78110fd8e32f803a5"
+    },
+    {
+      "path": "publishing/pages-controller/metadata/v0.55.0/manifest.json",
+      "bytes": 120099,
+      "sha256": "96085dafb2c7f8083564e9923647b914efe29a5704a35b23d7fe337f4be4ae56",
+      "gitBlob": "892f58d5f93874f6fa0def890e3419e95b864be4"
+    },
+    {
+      "path": "publishing/pages-controller/metadata/v0.55.0/distribution.zip.sha256",
+      "bytes": 83,
+      "sha256": "ef5594fdec1f6d6e3aa638c442ebdc53ae0a0c4fc0870d68c7aa18910300f482",
+      "gitBlob": "468e3255dddd32e74dcbba7973572cd9edbb481c"
+    }
+  ],
+  "remoteTagObservation": {
+    "method": "git ls-remote origin explicit v0.54.0/v0.55.0 tag and peeled refs; no release body fetch",
+    "refs": [
+      {
+        "version": "v0.54.0",
+        "tagObject": "a52d56fea73ec1bb6c57b13bcb44f54dd5a93e46",
+        "sourceRevision": "1af33851e93ee95110de20cc73622ed43d85a4da"
+      },
+      {
+        "version": "v0.55.0",
+        "tagObject": "253ed21b6897a0784ba3d8d2b871c952fee90451",
+        "sourceRevision": "acc9f265b651017fd268ffd8bbe6989bec614c41"
+      }
+    ],
+    "recordedAtUtc": "2026-09-15T08:04:25.995466+00:00",
+    "timeQualification": "Recorded after the read-only command in the same preparation session; not a server observation timestamp."
+  },
+  "preservation": {
+    "canonicalV054Rows": 650,
+    "canonicalV054Bytes": 312209030,
+    "unchangedMetadataFiles": 3
+  },
+  "derivation": "v055 canonical expectations are derived from the committed published release manifest, exact original metadata, and the unchanged pinned extractor ownership marker. This metadata check is not a new original ZIP/body/public verification.",
+  "remainingAuthority": "Hosted preparation must independently hash the original published ZIPs and every extracted body; then the combined HTTP and both-version native routing admission remain separate. Old v054 public evidence stays historical.",
+  "capacity": {
+    "canonicalVersionsBytes": 624421129,
+    "indexBytes": 586,
+    "artifactFiles": 1302,
+    "artifactBytes": 624421715,
+    "artifactCapBytes": 800000000,
+    "hostedMinimumFreeBytes": 3221225472,
+    "localBulkExecution": false
+  },
+  "publishedV055MetadataObservation": {
+    "source": "Retained P00 published-v055-release.json; metadata read only, no fresh API/body request",
+    "retainedBytes": 16843,
+    "retainedSha256": "c42501a902941b57dbdccf6b79b9fdaa2f41bcaa62bda856fbcd0c37cc00b747",
+    "releaseId": 388923117,
+    "tagName": "v0.55.0",
+    "draft": false,
+    "publishedAt": "2026-09-15T07:31:10Z",
+    "distributionAsset": {
+      "id": 565105368,
+      "name": "distribution.zip",
+      "state": "uploaded",
+      "size": 312325608,
+      "digest": "sha256:69807866db04cc22d6e4d5fdbd5e04b5bc8b57834548cc7a147da5bd0ec1eab7",
+      "browser_download_url": "https://github.com/mekhovov/revealline/releases/download/v0.55.0/distribution.zip"
+    }
+  }
+}
