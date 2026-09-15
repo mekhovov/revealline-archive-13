@@ -1,23 +1,39 @@
 {
-  "format": "revealline-archive-originals.v1",
+  "format": "revealline-archive-originals.v2",
   "archiveId": "archive-13",
   "repository": "mekhovov/revealline-archive-13",
   "sourceRepository": "mekhovov/revealline",
   "toolingCommit": "0594b60136db000c9d6c87527c7885c2c51a2562",
   "extractorPath": "publishing/pages-controller/extract-current.py",
   "extractorSha256": "38081b1791b49cb7328d18b4d4325c2876bb3bc8d7db03f4610f8d8a7c4bf91b",
-  "version": "v0.54.0",
-  "sourceRevision": "1af33851e93ee95110de20cc73622ed43d85a4da",
-  "tagObject": "a52d56fea73ec1bb6c57b13bcb44f54dd5a93e46",
-  "metadata": {
-    "release.json": "d487958dfe487643a4afd0b0e238aec7c4b521f469b62fe58d3e6f3122ddd24b",
-    "manifest.json": "e691af45b84bdf01025089939d3238e3b8971edb489003b7102c73ef03a835f5",
-    "distribution.zip.sha256": "bf8bb4ab070114cfd90748cd3d845f0be58ec24b538b4bba6abd02fcef1600c0"
-  },
-  "distributionSha256": "16322358137c6324c3cc328671c4e4ebbce36681c89a6a46328971b50584146f",
-  "distributionBytes": 312322539,
-  "expectedInventorySha256": "d1ef2652570264e277ee9a7fa08991d1688f8ff2f1ece06c9b0fb8dbdb85be1a",
-  "expectedBytes": 312209411,
-  "expectedFiles": 652,
-  "budgetBytes": 800000000
+  "expectedInventorySha256": "22cf74db72d72e2bc8c8c74d29b369066f31f7f24ef4f311d294bd3d5e52a073",
+  "expectedBytes": 624421715,
+  "expectedFiles": 1302,
+  "budgetBytes": 800000000,
+  "releases": [
+    {
+      "version": "v0.54.0",
+      "sourceRevision": "1af33851e93ee95110de20cc73622ed43d85a4da",
+      "tagObject": "a52d56fea73ec1bb6c57b13bcb44f54dd5a93e46",
+      "metadata": {
+        "release.json": "d487958dfe487643a4afd0b0e238aec7c4b521f469b62fe58d3e6f3122ddd24b",
+        "manifest.json": "e691af45b84bdf01025089939d3238e3b8971edb489003b7102c73ef03a835f5",
+        "distribution.zip.sha256": "bf8bb4ab070114cfd90748cd3d845f0be58ec24b538b4bba6abd02fcef1600c0"
+      },
+      "distributionSha256": "16322358137c6324c3cc328671c4e4ebbce36681c89a6a46328971b50584146f",
+      "distributionBytes": 312322539
+    },
+    {
+      "version": "v0.55.0",
+      "sourceRevision": "acc9f265b651017fd268ffd8bbe6989bec614c41",
+      "tagObject": "253ed21b6897a0784ba3d8d2b871c952fee90451",
+      "metadata": {
+        "release.json": "fc79b9ce3974276a6aa3c5e7a81925fe484387b12e0472f54f81ceea01927d17",
+        "manifest.json": "96085dafb2c7f8083564e9923647b914efe29a5704a35b23d7fe337f4be4ae56",
+        "distribution.zip.sha256": "ef5594fdec1f6d6e3aa638c442ebdc53ae0a0c4fc0870d68c7aa18910300f482"
+      },
+      "distributionSha256": "69807866db04cc22d6e4d5fdbd5e04b5bc8b57834548cc7a147da5bd0ec1eab7",
+      "distributionBytes": 312325608
+    }
+  ]
 }
