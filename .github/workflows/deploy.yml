@@ -1,0 +1,79 @@
+name: Publish immutable RevealLine archive 13
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: archive-13-pages
+  cancel-in-progress: false
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out reviewed archive infrastructure
+        uses: actions/checkout@v4
+        with:
+          path: archive
+          persist-credentials: false
+      - name: Check out the reviewed bounded original-ZIP extractor
+        uses: actions/checkout@v4
+        with:
+          repository: mekhovov/revealline
+          ref: 0594b60136db000c9d6c87527c7885c2c51a2562
+          fetch-depth: 1
+          path: source
+          persist-credentials: false
+          sparse-checkout: |
+            publishing/pages-controller/extract-current.py
+            publishing/pages-controller/test_extract_current.py
+          sparse-checkout-cone-mode: false
+      - name: Fetch the original immutable release tag for identity verification
+        working-directory: source
+        run: git fetch --depth=1 origin refs/tags/v0.54.0:refs/tags/v0.54.0
+      - name: Require artifact workspace capacity
+        run: |
+          python3 - <<'PY'
+          import shutil
+          free = shutil.disk_usage('.').free
+          assert free >= 2 * 1024**3, f'At least 2 GiB free required; found {free}'
+          PY
+      - name: Check extractor corruption guards and exact artifact inventory rules
+        run: |
+          python3 -m unittest discover -s source/publishing/pages-controller -p 'test_extract_current.py' -v
+          python3 -m unittest discover -s archive/tools -p 'test_*.py' -v
+      - name: Download original ZIP and verify every member without rebuilding source
+        run: python3 archive/tools/prepare.py --source source --out "$RUNNER_TEMP/archive13"
+      - name: Independently reread every artifact byte including hidden files
+        run: python3 archive/tools/verify.py "$RUNNER_TEMP/archive13/artifact"
+      - name: Retain extraction and complete-inventory receipts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: archive13-verification-receipts
+          if-no-files-found: warn
+          path: |
+            ${{ runner.temp }}/archive13/zip-receipt.json
+            ${{ runner.temp }}/archive13/receipt.json
+            ${{ runner.temp }}/archive13/expected-inventory.json
+      - name: Upload complete canonical site
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: ${{ runner.temp }}/archive13/artifact
+          include-hidden-files: true
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy archive 13 in its own repository
+        id: deployment
+        uses: actions/deploy-pages@v4
