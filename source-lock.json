@@ -6,9 +6,9 @@
   "toolingCommit": "0594b60136db000c9d6c87527c7885c2c51a2562",
   "extractorPath": "publishing/pages-controller/extract-current.py",
   "extractorSha256": "38081b1791b49cb7328d18b4d4325c2876bb3bc8d7db03f4610f8d8a7c4bf91b",
-  "expectedInventorySha256": "22cf74db72d72e2bc8c8c74d29b369066f31f7f24ef4f311d294bd3d5e52a073",
-  "expectedBytes": 624421715,
-  "expectedFiles": 1302,
+  "expectedInventorySha256": "d825b3ff2c7ae8a6f4a1212d86b28a9f8d6dcee117e1726b976fa25655c74ffa",
+  "expectedBytes": 624422286,
+  "expectedFiles": 1303,
   "budgetBytes": 800000000,
   "releases": [
     {

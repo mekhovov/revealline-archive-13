@@ -25,9 +25,18 @@ its temporary ZIP before processing the next version.
 `expected-inventory.json` includes every canonical body, hidden build marker,
 original manifest/checksum and release record. It is independently reconstructed
 from both pinned metadata cohorts before extraction. Two complete body reads
-must then match all **1,302 files / 624,421,715 bytes** before Pages upload, below
-the unchanged **800,000,000-byte** artifact cap (175,578,285 bytes spare).
+must then match all **1,303 files / 624,422,286 bytes** before Pages upload, below
+the unchanged **800,000,000-byte** artifact cap (175,577,714 bytes spare).
 The downloadable ZIPs remain on the original GitHub Releases.
+
+The infrastructure-owned `releases/index.html` sends the frozen games’ Release
+explorer action to `https://mekhovov.github.io/revealline/releases/`, with an
+explicit visible link as well as refresh. The preceding 1,302-file deployment
+passed its exact HTTP inventory, but native browser testing found that this omitted
+route returned 404. That byte audit is retained with routing acceptance false.
+This added page is included in metadata derivation and both complete artifact
+reads; neither original game is rewritten. New hosted/public/native verification
+is required before controller admission.
 
 Actual preparation requires **3 GiB free** in both the workflow and CLI. With
 sequential extraction the archive plus one temporary ZIP is under 937 MB; Pages

@@ -59,11 +59,12 @@
   "capacity": {
     "canonicalVersionsBytes": 624421129,
     "indexBytes": 586,
-    "artifactFiles": 1302,
-    "artifactBytes": 624421715,
+    "artifactFiles": 1303,
+    "artifactBytes": 624422286,
     "artifactCapBytes": 800000000,
     "hostedMinimumFreeBytes": 3221225472,
-    "localBulkExecution": false
+    "localBulkExecution": false,
+    "releaseExplorerBridgeBytes": 571
   },
   "publishedV055MetadataObservation": {
     "source": "Retained P00 published-v055-release.json; metadata read only, no fresh API/body request",
@@ -81,5 +82,14 @@
       "digest": "sha256:69807866db04cc22d6e4d5fdbd5e04b5bc8b57834548cc7a147da5bd0ec1eab7",
       "browser_download_url": "https://github.com/mekhovov/revealline/releases/download/v0.55.0/distribution.zip"
     }
+  },
+  "releaseExplorerBridge": {
+    "baseInfrastructureCommit": "36238c14804bb50ccd853ac1769e2db51e9fb690",
+    "path": "releases/index.html",
+    "bytes": 571,
+    "sha256": "a67eebc2c45e1659fef5b993c65fee2146ae3e47f352f25b0c9d42ccc77471c0",
+    "destination": "https://mekhovov.github.io/revealline/releases/",
+    "reason": "Native v055 Release explorer action and direct HTTP read reached /releases/404 on the prior1302 artifact. This one infrastructure page adds refresh plus a visible fallback link; every frozen cohort row is unchanged.",
+    "acceptance": "Prior1302 full HTTP pass remains byte-only evidence with this route defect open. New deployment/HTTP and native link acceptance remain pending."
   }
 }

@@ -115,6 +115,7 @@ def locked_inputs(root=ROOT):
     derived.extend([
         {'path': '.nojekyll', 'bytes': 0, 'sha256': hashlib.sha256(b'').hexdigest()},
         {'path': 'index.html', 'bytes': (root / 'index.html').stat().st_size, 'sha256': digest(root / 'index.html')},
+        {'path': 'releases/index.html', 'bytes': (root / 'releases/index.html').stat().st_size, 'sha256': digest(root / 'releases/index.html')},
     ])
     if sorted(derived, key=lambda row: row['path']) != inventory['files']:
         raise ValueError('Canonical inventory differs from original metadata cohorts')

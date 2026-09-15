@@ -12,6 +12,11 @@
       "sha256": "1ec869a6ffac295b8ce3d42c7c8581bd18ca9ad9978d8ee2beaea20042b1095c"
     },
     {
+      "path": "releases/index.html",
+      "bytes": 571,
+      "sha256": "a67eebc2c45e1659fef5b993c65fee2146ae3e47f352f25b0c9d42ccc77471c0"
+    },
+    {
       "path": "releases/v0.54.0/release.json",
       "bytes": 465,
       "sha256": "d487958dfe487643a4afd0b0e238aec7c4b521f469b62fe58d3e6f3122ddd24b"
