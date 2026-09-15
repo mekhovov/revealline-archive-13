@@ -1,6 +1,7 @@
 """Tiny local cohorts: no release downloads, game builds or network access."""
 import copy
 import hashlib
+from html.parser import HTMLParser
 import json
 from pathlib import Path
 import subprocess
@@ -65,6 +66,8 @@ class CohortTests(unittest.TestCase):
         revision = git(self.source, 'rev-parse', 'HEAD')
         init(self.archive)
         (self.archive / 'index.html').write_bytes(b'fixture index')
+        (self.archive / 'releases').mkdir()
+        (self.archive / 'releases/index.html').write_bytes(b'fixture explorer')
         releases = []
         for version in ('v0.1.0', 'v0.2.0'):
             git(self.source, 'tag', '-a', version, '-m', 'fixture')
@@ -80,6 +83,7 @@ class CohortTests(unittest.TestCase):
         self.lock = {'format': 'revealline-archive-originals.v2', 'archiveId': 'fixture', 'toolingCommit': revision, 'extractorPath': 'extractor.py', 'extractorSha256': digest(self.source / 'extractor.py'), 'releases': releases, 'budgetBytes': LIMIT}
         rows = [row for release in releases for row in metadata_inventory(self.archive, release)]
         rows += [{'path': 'index.html', 'bytes': 13, 'sha256': sha(b'fixture index')}, {'path': '.nojekyll', 'bytes': 0, 'sha256': sha(b'')}]
+        rows.append({'path': 'releases/index.html', 'bytes': 16, 'sha256': sha(b'fixture explorer')})
         rows.sort(key=lambda row: row['path'])
         self.expected = {'base': 'https://example.invalid/', 'files': rows}
         (self.archive / 'expected-inventory.json').write_bytes(encoded(self.expected))
@@ -100,7 +104,8 @@ class CohortTests(unittest.TestCase):
         result = self.assemble()
         self.assertEqual(result['status'], 'PASS')
         self.assertEqual([r['version'] for r in result['releases']], ['v0.1.0', 'v0.2.0'])
-        self.assertEqual(result['files'], 12)
+        self.assertEqual(result['files'], 13)
+        self.assertEqual((self.output / 'artifact/releases/index.html').read_bytes(), b'fixture explorer')
         self.assertEqual(verify(self.output / 'artifact', self.expected['files'])['bytes'], result['bytes'])
         for version in ('v0.1.0', 'v0.2.0'):
             self.assertEqual((self.output / 'artifact/releases' / version / 'release.json').read_bytes(), (self.archive / 'metadata' / version / 'release.json').read_bytes())
@@ -126,6 +131,23 @@ class CohortTests(unittest.TestCase):
         self.fixture()
         (self.archive / 'metadata/v0.2.0/release.json').write_bytes(b'changed')
         with self.assertRaisesRegex(ValueError, 'metadata bytes changed'):
+            self.assemble()
+        self.assertFalse(self.output.exists())
+
+    def test_missing_release_explorer_bridge_refuses_before_extraction(self):
+        self.fixture()
+        (self.archive / 'releases/index.html').unlink()
+        with self.assertRaises(FileNotFoundError):
+            self.assemble()
+        self.assertFalse(self.output.exists())
+
+    def test_inventory_cannot_omit_the_release_explorer_route(self):
+        self.fixture()
+        self.expected['files'] = [r for r in self.expected['files'] if r['path'] != 'releases/index.html']
+        (self.archive / 'expected-inventory.json').write_bytes(encoded(self.expected))
+        self.lock.update(expectedInventorySha256=digest(self.archive / 'expected-inventory.json'), expectedFiles=len(self.expected['files']), expectedBytes=sum(r['bytes'] for r in self.expected['files']))
+        self.write_lock()
+        with self.assertRaisesRegex(ValueError, 'Canonical inventory'):
             self.assemble()
         self.assertFalse(self.output.exists())
 
@@ -192,12 +214,46 @@ class CohortTests(unittest.TestCase):
 class CommittedMetadataTests(unittest.TestCase):
     def test_exact_combined_metadata_and_preserved_original_v054_pins(self):
         lock, inventory = locked_inputs(ROOT)
-        self.assertEqual((lock['expectedFiles'], lock['expectedBytes']), (1302, 624421715))
+        self.assertEqual((lock['expectedFiles'], lock['expectedBytes']), (1303, 624422286))
         old = lock['releases'][0]
         self.assertEqual(old['version'], 'v0.54.0')
         self.assertEqual(old['metadata'], {'release.json': 'd487958dfe487643a4afd0b0e238aec7c4b521f469b62fe58d3e6f3122ddd24b', 'manifest.json': 'e691af45b84bdf01025089939d3238e3b8971edb489003b7102c73ef03a835f5', 'distribution.zip.sha256': 'bf8bb4ab070114cfd90748cd3d845f0be58ec24b538b4bba6abd02fcef1600c0'})
         rows = [row for row in inventory['files'] if row['path'].startswith('releases/v0.54.0/')]
         self.assertEqual((len(rows), sum(row['bytes'] for row in rows)), (650, 312209030))
+
+    def test_release_explorer_has_an_accessible_fallback_and_main_destination(self):
+        class Links(HTMLParser):
+            def __init__(self):
+                super().__init__()
+                self.refreshes = []
+                self.links = []
+                self.current = None
+
+            def handle_starttag(self, tag, attrs):
+                attrs = dict(attrs)
+                if tag == 'meta' and attrs.get('http-equiv', '').lower() == 'refresh':
+                    self.refreshes.append(attrs.get('content', ''))
+                if tag == 'a':
+                    self.current = [attrs.get('href'), '']
+                    self.links.append(self.current)
+
+            def handle_data(self, data):
+                if self.current is not None:
+                    self.current[1] += data
+
+            def handle_endtag(self, tag):
+                if tag == 'a':
+                    self.current = None
+
+        parser = Links()
+        parser.feed((ROOT / 'releases/index.html').read_text())
+        destination = 'https://mekhovov.github.io/revealline/releases/'
+        self.assertEqual(len(parser.refreshes), 1)
+        delay, target = parser.refreshes[0].split(';', 1)
+        self.assertEqual((delay.strip(), target.strip()), ('0', 'url=' + destination))
+        self.assertEqual(len(parser.links), 1)
+        self.assertEqual(parser.links[0][0], destination)
+        self.assertIn('release explorer', parser.links[0][1].lower())
 
 
 if __name__ == '__main__':

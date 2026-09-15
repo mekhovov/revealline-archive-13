@@ -56,6 +56,7 @@ def prepare(source, output, root=ROOT):
         shutil.copyfile(metadata / 'release.json', release / 'release.json')
         extractions.append({'version': version, 'sourceRevision': cohort['sourceRevision'], 'tagObject': cohort['tagObject'], 'originalZipExtraction': extraction})
     shutil.copyfile(root / 'index.html', artifact / 'index.html')
+    shutil.copyfile(root / 'releases/index.html', artifact / 'releases/index.html')
     (artifact / '.nojekyll').write_bytes(b'')
     result = verify(artifact, inventory['files'])
     verify_source(source, lock)
